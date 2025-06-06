@@ -1,6 +1,8 @@
 package redis.example.demo.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import redis.example.demo.entity.Category;
@@ -15,6 +17,7 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private static final String CACHE_NAME = "categories";
 
     @Autowired
     public CategoryServiceImpl(CategoryRepository categoryRepository) {
@@ -22,6 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = CACHE_NAME, key = "'all'")
     public List<Category> getAllCategories() {
         try {
             return categoryRepository.findAll();
@@ -31,6 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = CACHE_NAME, key = "#id")
     public Optional<Category> getCategoryById(Long id) {
         if (id == null || id <= 0) {
             throw new CategoryException("Invalid category ID");
@@ -43,6 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(value = CACHE_NAME, allEntries = true)
     public Category createCategory(Category category) {
         validateCategory(category);
         
@@ -59,6 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(value = CACHE_NAME, allEntries = true)
     public Category updateCategory(Long id, Category categoryDetails) {
         if (id == null || id <= 0) {
             throw new CategoryException("Invalid category ID");
@@ -87,6 +94,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(value = CACHE_NAME, allEntries = true)
     public void deleteCategory(Long id) {
         if (id == null || id <= 0) {
             throw new CategoryException("Invalid category ID");
